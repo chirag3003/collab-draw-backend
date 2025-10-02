@@ -11,8 +11,10 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/chirag3003/collab-draw-backend/graph"
+	"github.com/chirag3003/collab-draw-backend/graph/resolvers"
 	"github.com/chirag3003/collab-draw-backend/internal/db"
 	"github.com/chirag3003/collab-draw-backend/internal/repository"
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/joho/godotenv"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -37,7 +39,10 @@ func main() {
 	// Setting up repositories
 	repository.Setup()
 
-	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	//setting up Clerk
+	clerk.SetKey(os.Getenv("CLERK_SECRET_KEY"))
+
+	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &resolvers.Resolver{}}))
 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
@@ -51,6 +56,7 @@ func main() {
 	})
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	//http.Handle("/query", auth.Middleware()(srv))
 	http.Handle("/query", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
