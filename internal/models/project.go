@@ -6,8 +6,9 @@ type Project struct {
 	ID          bson.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name        string        `bson:"name" json:"name"`
 	Description string        `bson:"description" json:"description"`
-	OwnerID     bson.ObjectID `bson:"owner_id" json:"ownerId"`
+	Owner       bson.ObjectID `bson:"owner" json:"owner"`
 	Workspace   bson.ObjectID `bson:"workspace" json:"workspace"`
+	Personal    bool          `bson:"personal" json:"personal"`
 	AppState    string        `bson:"app_state" json:"appState"`
 	Elements    string        `bson:"elements" json:"elements"`
 	CreatedAt   int64         `bson:"created_at" json:"createdAt"`

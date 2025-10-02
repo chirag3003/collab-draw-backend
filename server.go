@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/chirag3003/collab-draw-backend/graph"
 	"github.com/chirag3003/collab-draw-backend/internal/db"
+	"github.com/chirag3003/collab-draw-backend/internal/repository"
 	"github.com/joho/godotenv"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -32,6 +33,9 @@ func main() {
 
 	// Connect to MongoDB
 	db.ConnectMongo()
+
+	// Setting up repositories
+	repository.Setup()
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
 
