@@ -12,12 +12,19 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/chirag3003/collab-draw-backend/graph"
 	"github.com/chirag3003/collab-draw-backend/internal/db"
+	"github.com/joho/godotenv"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
 const defaultPort = "8080"
 
 func main() {
+	//Loading Env Variables
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort

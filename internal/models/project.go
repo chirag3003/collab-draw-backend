@@ -8,5 +8,7 @@ type Project struct {
 	Description string        `bson:"description" json:"description"`
 	OwnerID     bson.ObjectID `bson:"owner_id" json:"ownerId"`
 	Workspace   bson.ObjectID `bson:"workspace" json:"workspace"`
+	AppState    string        `bson:"app_state" json:"appState"`
+	Elements    string        `bson:"elements" json:"elements"`
 	CreatedAt   int64         `bson:"created_at" json:"createdAt"`
 }
