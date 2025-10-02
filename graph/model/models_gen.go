@@ -5,9 +5,29 @@ package model
 type Mutation struct {
 }
 
+type NewProject struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+	Owner       string  `json:"owner"`
+	Workspace   *string `json:"workspace,omitempty"`
+	Personal    bool    `json:"personal"`
+}
+
 type NewTodo struct {
 	Text   string `json:"text"`
 	UserID string `json:"userId"`
+}
+
+type Project struct {
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+	Owner       string  `json:"owner"`
+	Workspace   *string `json:"workspace,omitempty"`
+	Personal    bool    `json:"personal"`
+	AppState    string  `json:"appState"`
+	Elements    string  `json:"elements"`
+	CreatedAt   int32   `json:"createdAt"`
 }
 
 type Query struct {

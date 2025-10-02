@@ -37,12 +37,14 @@ func main() {
 	db.ConnectMongo()
 
 	// Setting up repositories
-	repository.Setup()
+	repo := repository.Setup()
 
 	//setting up Clerk
 	clerk.SetKey(os.Getenv("CLERK_SECRET_KEY"))
 
-	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &resolvers.Resolver{}}))
+	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &resolvers.Resolver{
+		Repo: repo,
+	}}))
 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
