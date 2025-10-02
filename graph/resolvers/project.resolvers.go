@@ -92,15 +92,78 @@ func (r *queryResolver) Projects(ctx context.Context) ([]*model.Project, error) 
 
 // Project is the resolver for the project field.
 func (r *queryResolver) Project(ctx context.Context, id string) (*model.Project, error) {
-	panic(fmt.Errorf("not implemented: Project - project"))
+	project, err := r.Repo.Project.GetProjectByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch project: %v", err)
+	}
+	if project == nil {
+		return nil, nil // or return an error if preferred
+	}
+	var workspace *string = nil
+	if project.Workspace != nil {
+		hex := project.Workspace.Hex()
+		workspace = &hex
+	}
+	return &model.Project{
+		ID:          project.ID.Hex(),
+		Name:        project.Name,
+		Description: &project.Description,
+		Owner:       project.Owner.Hex(),
+		Workspace:   workspace,
+		Personal:    project.Personal,
+		AppState:    project.AppState,
+		Elements:    project.Elements,
+		CreatedAt:   project.CreatedAt,
+	}, nil
 }
 
 // ProjectsByUser is the resolver for the projectsByUser field.
 func (r *queryResolver) ProjectsByUser(ctx context.Context, userID string) ([]*model.Project, error) {
-	panic(fmt.Errorf("not implemented: ProjectsByUser - projectsByUser"))
+	projects, err := r.Repo.Project.GetProjectsByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch projects: %v", err)
+	}
+	var result []*model.Project
+	for _, p := range projects {
+		var workspace *string = nil
+		if p.Workspace != nil {
+			hex := p.Workspace.Hex()
+			workspace = &hex
+		}
+		result = append(result, &model.Project{
+			ID:          p.ID.Hex(),
+			Name:        p.Name,
+			Description: &p.Description,
+			Owner:       p.Owner.Hex(),
+			Workspace:   workspace,
+			Personal:    p.Personal,
+			AppState:    p.AppState,
+			Elements:    p.Elements,
+			CreatedAt:   p.CreatedAt,
+		})
+	}
+	return result, nil
 }
 
 // ProjectsByWorkspace is the resolver for the projectsByWorkspace field.
 func (r *queryResolver) ProjectsByWorkspace(ctx context.Context, workspaceID string) ([]*model.Project, error) {
-	panic(fmt.Errorf("not implemented: ProjectsByWorkspace - projectsByWorkspace"))
+	projects, err := r.Repo.Project.GetProjectsByWorkspaceID(ctx, workspaceID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch projects: %v", err)
+	}
+	var result []*model.Project
+	for _, p := range projects {
+		result = append(result, &model.Project{
+			ID:          p.ID.Hex(),
+			Name:        p.Name,
+			Description: &p.Description,
+			Owner:       p.Owner.Hex(),
+			Workspace:   &workspaceID,
+			Personal:    p.Personal,
+			AppState:    p.AppState,
+			Elements:    p.Elements,
+			CreatedAt:   p.CreatedAt,
+		})
+	}
+	return result, nil
 }
