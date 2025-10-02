@@ -24,7 +24,7 @@ func main() {
 	}
 
 	// Connect to MongoDB
-	_ := db.ConnectMongo()
+	db.ConnectMongo()
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
 
