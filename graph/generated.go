@@ -52,7 +52,7 @@ type ComplexityRoot struct {
 		CreateTodo    func(childComplexity int, input model.NewTodo) int
 		DeleteProject func(childComplexity int, id string) int
 		Empty         func(childComplexity int) int
-		UpdateProject func(childComplexity int, id string, appState *string, elements *string) int
+		UpdateProject func(childComplexity int, id string, appState string, elements string) int
 	}
 
 	Project struct {
@@ -92,7 +92,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	Empty(ctx context.Context) (*string, error)
 	CreateProject(ctx context.Context, input model.NewProject) (string, error)
-	UpdateProject(ctx context.Context, id string, appState *string, elements *string) (*model.Project, error)
+	UpdateProject(ctx context.Context, id string, appState string, elements string) (bool, error)
 	DeleteProject(ctx context.Context, id string) (bool, error)
 	CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error)
 }
@@ -173,7 +173,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateProject(childComplexity, args["id"].(string), args["appState"].(*string), args["elements"].(*string)), true
+		return e.complexity.Mutation.UpdateProject(childComplexity, args["id"].(string), args["appState"].(string), args["elements"].(string)), true
 
 	case "Project.appState":
 		if e.complexity.Project.AppState == nil {
@@ -489,12 +489,12 @@ func (ec *executionContext) field_Mutation_updateProject_args(ctx context.Contex
 		return nil, err
 	}
 	args["id"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "appState", ec.unmarshalOString2ᚖstring)
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "appState", ec.unmarshalNString2string)
 	if err != nil {
 		return nil, err
 	}
 	args["appState"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "elements", ec.unmarshalOString2ᚖstring)
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "elements", ec.unmarshalNString2string)
 	if err != nil {
 		return nil, err
 	}
@@ -676,10 +676,10 @@ func (ec *executionContext) _Mutation_updateProject(ctx context.Context, field g
 		ec.fieldContext_Mutation_updateProject,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().UpdateProject(ctx, fc.Args["id"].(string), fc.Args["appState"].(*string), fc.Args["elements"].(*string))
+			return ec.resolvers.Mutation().UpdateProject(ctx, fc.Args["id"].(string), fc.Args["appState"].(string), fc.Args["elements"].(string))
 		},
 		nil,
-		ec.marshalNProject2ᚖgithubᚗcomᚋchirag3003ᚋcollabᚑdrawᚑbackendᚋgraphᚋmodelᚐProject,
+		ec.marshalNBoolean2bool,
 		true,
 		true,
 	)
@@ -692,27 +692,7 @@ func (ec *executionContext) fieldContext_Mutation_updateProject(ctx context.Cont
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Project_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Project_name(ctx, field)
-			case "description":
-				return ec.fieldContext_Project_description(ctx, field)
-			case "owner":
-				return ec.fieldContext_Project_owner(ctx, field)
-			case "workspace":
-				return ec.fieldContext_Project_workspace(ctx, field)
-			case "personal":
-				return ec.fieldContext_Project_personal(ctx, field)
-			case "appState":
-				return ec.fieldContext_Project_appState(ctx, field)
-			case "elements":
-				return ec.fieldContext_Project_elements(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Project_createdAt(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Project", field.Name)
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	defer func() {
@@ -1063,7 +1043,7 @@ func (ec *executionContext) _Project_createdAt(ctx context.Context, field graphq
 			return obj.CreatedAt, nil
 		},
 		nil,
-		ec.marshalNInt2int32,
+		ec.marshalNString2string,
 		true,
 		true,
 	)
@@ -1076,7 +1056,7 @@ func (ec *executionContext) fieldContext_Project_createdAt(_ context.Context, fi
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4001,22 +3981,6 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNInt2int32(ctx context.Context, v any) (int32, error) {
-	res, err := graphql.UnmarshalInt32(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.SelectionSet, v int32) graphql.Marshaler {
-	_ = sel
-	res := graphql.MarshalInt32(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
 func (ec *executionContext) unmarshalNNewProject2githubᚗcomᚋchirag3003ᚋcollabᚑdrawᚑbackendᚋgraphᚋmodelᚐNewProject(ctx context.Context, v any) (model.NewProject, error) {
 	res, err := ec.unmarshalInputNewProject(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4025,10 +3989,6 @@ func (ec *executionContext) unmarshalNNewProject2githubᚗcomᚋchirag3003ᚋcol
 func (ec *executionContext) unmarshalNNewTodo2githubᚗcomᚋchirag3003ᚋcollabᚑdrawᚑbackendᚋgraphᚋmodelᚐNewTodo(ctx context.Context, v any) (model.NewTodo, error) {
 	res, err := ec.unmarshalInputNewTodo(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNProject2githubᚗcomᚋchirag3003ᚋcollabᚑdrawᚑbackendᚋgraphᚋmodelᚐProject(ctx context.Context, sel ast.SelectionSet, v model.Project) graphql.Marshaler {
-	return ec._Project(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNProject2ᚕᚖgithubᚗcomᚋchirag3003ᚋcollabᚑdrawᚑbackendᚋgraphᚋmodelᚐProjectᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Project) graphql.Marshaler {

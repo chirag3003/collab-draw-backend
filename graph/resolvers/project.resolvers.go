@@ -29,7 +29,7 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewPro
 		if err != nil {
 			return "", fmt.Errorf("invalid workspace ID: %v", err)
 		}
-		project.Workspace = id
+		project.Workspace = &id
 	}
 
 	ownerID, err := bson.ObjectIDFromHex(input.Owner)
@@ -45,18 +45,49 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewPro
 }
 
 // UpdateProject is the resolver for the updateProject field.
-func (r *mutationResolver) UpdateProject(ctx context.Context, id string, appState *string, elements *string) (*model.Project, error) {
-	panic(fmt.Errorf("not implemented: UpdateProject - updateProject"))
+func (r *mutationResolver) UpdateProject(ctx context.Context, id string, appState string, elements string) (bool, error) {
+	err := r.Repo.Project.UpdateProject(ctx, id, appState, elements)
+	if err != nil {
+		return false, fmt.Errorf("failed to update project: %v", err)
+	}
+	return true, nil
 }
 
 // DeleteProject is the resolver for the deleteProject field.
 func (r *mutationResolver) DeleteProject(ctx context.Context, id string) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteProject - deleteProject"))
+	success, err := r.Repo.Project.DeleteProject(ctx, id)
+	if err != nil {
+		return false, fmt.Errorf("failed to delete project: %v", err)
+	}
+	return success, nil
 }
 
 // Projects is the resolver for the projects field.
 func (r *queryResolver) Projects(ctx context.Context) ([]*model.Project, error) {
-	panic(fmt.Errorf("not implemented: Projects - projects"))
+	projects, err := r.Repo.Project.GetAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch projects: %v", err)
+	}
+	var result []*model.Project
+	for _, p := range projects {
+		var workspace *string = nil
+		if p.Workspace != nil {
+			hex := p.Workspace.Hex()
+			workspace = &hex
+		}
+		result = append(result, &model.Project{
+			ID:          p.ID.Hex(),
+			Name:        p.Name,
+			Description: &p.Description,
+			Owner:       p.Owner.Hex(),
+			Workspace:   workspace,
+			Personal:    p.Personal,
+			AppState:    p.AppState,
+			Elements:    p.Elements,
+			CreatedAt:   p.CreatedAt,
+		})
+	}
+	return result, nil
 }
 
 // Project is the resolver for the project field.

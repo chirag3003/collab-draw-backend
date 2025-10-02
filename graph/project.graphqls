@@ -7,7 +7,7 @@ type Project {
     personal: Boolean!
     appState: String!
     elements: String!
-    createdAt: Int!
+    createdAt: String!
 }
 
 input NewProject {
@@ -27,6 +27,6 @@ extend type Query {
 
 extend type Mutation {
     createProject(input: NewProject!): String!
-    updateProject(id: ID!, appState: String, elements: String): Project!
+    updateProject(id: ID!, appState: String!, elements: String!): Boolean!
     deleteProject(id: ID!): Boolean!
 }

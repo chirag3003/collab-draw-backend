@@ -27,7 +27,7 @@ type Project struct {
 	Personal    bool    `json:"personal"`
 	AppState    string  `json:"appState"`
 	Elements    string  `json:"elements"`
-	CreatedAt   int32   `json:"createdAt"`
+	CreatedAt   string  `json:"createdAt"`
 }
 
 type Query struct {
