@@ -8,5 +8,5 @@ type Workspace struct {
 	Description string          `bson:"description" json:"description"`
 	OwnerID     bson.ObjectID   `bson:"owner_id" json:"ownerId"`
 	Members     []bson.ObjectID `bson:"members" json:"members"`
-	CreatedAt   int64           `bson:"created_at" json:"createdAt"`
+	CreatedAt   string          `bson:"created_at" json:"createdAt"`
 }

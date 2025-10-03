@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/chirag3003/collab-draw-backend/internal/config"
@@ -29,7 +30,7 @@ func NewWorkspaceRepository() WorkspaceRepository {
 }
 
 func (r *workspaceRepository) CreateWorkspace(context context.Context, data *models.Workspace) error {
-	data.CreatedAt = time.Now().Unix()
+	data.CreatedAt = time.Now().String()
 	_, err := r.workspace.InsertOne(context, data)
 	if err != nil {
 		return err
@@ -45,7 +46,7 @@ func (r *workspaceRepository) GetWorkspaceByID(context context.Context, id strin
 	}
 	err = r.workspace.FindOne(context, bson.M{"_id": ID}).Decode(&workspace)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
+		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, nil
 		}
 		return nil, err
