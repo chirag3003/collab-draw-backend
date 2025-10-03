@@ -49,7 +49,7 @@ func (r *projectRepository) UpdateProject(context context.Context, id string, ap
 	}
 	update := bson.M{
 		"$set": bson.M{
-			"appState":  appState,
+			"app_state": appState,
 			"elements":  elements,
 			"updatedAt": time.Now().Unix(),
 		},

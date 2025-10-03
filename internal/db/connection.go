@@ -27,7 +27,7 @@ func (c *conn) Close() {
 }
 
 func (c *conn) DB() *mongo.Database {
-	return c.session.Database(os.Getenv("MONGO_DB"))
+	return c.session.Database(os.Getenv("MONGO_DATABASE"))
 }
 
 func ConnectMongo() Connection {
