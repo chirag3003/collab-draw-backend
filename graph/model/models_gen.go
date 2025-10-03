@@ -18,6 +18,12 @@ type NewTodo struct {
 	UserID string `json:"userId"`
 }
 
+type NewWorkspace struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Owner       string `json:"owner"`
+}
+
 type Project struct {
 	ID          string  `json:"id"`
 	Name        string  `json:"name"`
@@ -43,4 +49,13 @@ type Todo struct {
 type User struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type Workspace struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Owner       string   `json:"owner"`
+	Members     []string `json:"members"`
+	CreatedAt   string   `json:"createdAt"`
 }

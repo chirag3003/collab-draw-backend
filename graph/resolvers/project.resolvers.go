@@ -19,6 +19,7 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewPro
 		Name:     input.Name,
 		AppState: "",
 		Elements: "",
+		Owner:    input.Owner,
 	}
 	if input.Description != nil {
 		project.Description = *input.Description
@@ -32,12 +33,7 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewPro
 		project.Workspace = &id
 	}
 
-	ownerID, err := bson.ObjectIDFromHex(input.Owner)
-	if err != nil {
-		return "", fmt.Errorf("invalid owner ID: %v", err)
-	}
-	project.Owner = ownerID
-	err = r.Repo.Project.NewProject(ctx, project)
+	err := r.Repo.Project.NewProject(ctx, project)
 	if err != nil {
 		return "", fmt.Errorf("failed to create project: %v", err)
 	}
@@ -79,7 +75,7 @@ func (r *queryResolver) Projects(ctx context.Context) ([]*model.Project, error) 
 			ID:          p.ID.Hex(),
 			Name:        p.Name,
 			Description: &p.Description,
-			Owner:       p.Owner.Hex(),
+			Owner:       p.Owner,
 			Workspace:   workspace,
 			Personal:    p.Personal,
 			AppState:    p.AppState,
@@ -108,7 +104,7 @@ func (r *queryResolver) Project(ctx context.Context, id string) (*model.Project,
 		ID:          project.ID.Hex(),
 		Name:        project.Name,
 		Description: &project.Description,
-		Owner:       project.Owner.Hex(),
+		Owner:       project.Owner,
 		Workspace:   workspace,
 		Personal:    project.Personal,
 		AppState:    project.AppState,
@@ -134,7 +130,7 @@ func (r *queryResolver) ProjectsByUser(ctx context.Context, userID string) ([]*m
 			ID:          p.ID.Hex(),
 			Name:        p.Name,
 			Description: &p.Description,
-			Owner:       p.Owner.Hex(),
+			Owner:       p.Owner,
 			Workspace:   workspace,
 			Personal:    p.Personal,
 			AppState:    p.AppState,
@@ -157,7 +153,7 @@ func (r *queryResolver) ProjectsByWorkspace(ctx context.Context, workspaceID str
 			ID:          p.ID.Hex(),
 			Name:        p.Name,
 			Description: &p.Description,
-			Owner:       p.Owner.Hex(),
+			Owner:       p.Owner,
 			Workspace:   &workspaceID,
 			Personal:    p.Personal,
 			AppState:    p.AppState,

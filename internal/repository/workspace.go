@@ -18,9 +18,11 @@ type workspaceRepository struct {
 
 type WorkspaceRepository interface {
 	CreateWorkspace(context context.Context, data *models.Workspace) error
+	GetAllWorkspaces(context context.Context) ([]*models.Workspace, error)
 	GetWorkspaceByID(context context.Context, id string) (*models.Workspace, error)
 	GetWorkspacesByUser(context context.Context, userID string) (*[]models.Workspace, error)
 	GetSharedWorkspaces(context context.Context, userID string) (*[]models.Workspace, error)
+	DeleteWorkspace(context context.Context, id string) error
 }
 
 func NewWorkspaceRepository() WorkspaceRepository {
@@ -36,6 +38,18 @@ func (r *workspaceRepository) CreateWorkspace(context context.Context, data *mod
 		return err
 	}
 	return nil
+}
+
+func (r *workspaceRepository) GetAllWorkspaces(context context.Context) ([]*models.Workspace, error) {
+	var workspaces []*models.Workspace
+	cursor, err := r.workspace.Find(context, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(context, &workspaces); err != nil {
+		return nil, err
+	}
+	return workspaces, nil
 }
 
 func (r *workspaceRepository) GetWorkspaceByID(context context.Context, id string) (*models.Workspace, error) {
@@ -56,11 +70,7 @@ func (r *workspaceRepository) GetWorkspaceByID(context context.Context, id strin
 
 func (r *workspaceRepository) GetWorkspacesByUser(context context.Context, userID string) (*[]models.Workspace, error) {
 	var workspaces []models.Workspace
-	ID, err := bson.ObjectIDFromHex(userID)
-	if err != nil {
-		return nil, err
-	}
-	cursor, err := r.workspace.Find(context, bson.M{"members": ID})
+	cursor, err := r.workspace.Find(context, bson.M{"members": userID})
 	if err != nil {
 		return nil, err
 	}
@@ -72,11 +82,7 @@ func (r *workspaceRepository) GetWorkspacesByUser(context context.Context, userI
 
 func (r *workspaceRepository) GetSharedWorkspaces(context context.Context, userID string) (*[]models.Workspace, error) {
 	var workspaces []models.Workspace
-	ID, err := bson.ObjectIDFromHex(userID)
-	if err != nil {
-		return nil, err
-	}
-	cursor, err := r.workspace.Find(context, bson.M{"members": bson.M{"$in": []bson.ObjectID{ID}}})
+	cursor, err := r.workspace.Find(context, bson.M{"members": bson.M{"$in": []string{userID}}})
 	if err != nil {
 		return nil, err
 	}
@@ -84,4 +90,16 @@ func (r *workspaceRepository) GetSharedWorkspaces(context context.Context, userI
 		return nil, err
 	}
 	return &workspaces, nil
+}
+
+func (r *workspaceRepository) DeleteWorkspace(context context.Context, id string) error {
+	ID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = r.workspace.DeleteOne(context, bson.M{"_id": ID})
+	if err != nil {
+		return err
+	}
+	return nil
 }
