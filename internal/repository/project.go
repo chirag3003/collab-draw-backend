@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/chirag3003/collab-draw-backend/internal/config"
@@ -80,7 +81,7 @@ func (r *projectRepository) GetProjectByID(context context.Context, id string) (
 	}
 	err = r.project.FindOne(context, bson.M{"_id": ID}).Decode(&project)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
+		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, nil
 		}
 		return nil, err
