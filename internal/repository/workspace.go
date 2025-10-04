@@ -60,7 +60,7 @@ func (r *workspaceRepository) GetWorkspaceByID(context context.Context, id strin
 	}
 	err = r.workspace.FindOne(context, bson.M{"_id": ID,
 		"$or": bson.A{
-			bson.M{"owner": userID},
+			bson.M{"owner_id": userID},
 			bson.M{"members": userID},
 		},
 	}).Decode(&workspace)
