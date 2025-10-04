@@ -19,10 +19,10 @@ type workspaceRepository struct {
 type WorkspaceRepository interface {
 	CreateWorkspace(context context.Context, data *models.Workspace) error
 	GetAllWorkspaces(context context.Context) ([]*models.Workspace, error)
-	GetWorkspaceByID(context context.Context, id string) (*models.Workspace, error)
+	GetWorkspaceByID(context context.Context, id string, userID string) (*models.Workspace, error)
 	GetWorkspacesByUser(context context.Context, userID string) (*[]models.Workspace, error)
 	GetSharedWorkspaces(context context.Context, userID string) (*[]models.Workspace, error)
-	DeleteWorkspace(context context.Context, id string) error
+	DeleteWorkspace(context context.Context, id string, userID string) error
 }
 
 func NewWorkspaceRepository() WorkspaceRepository {
@@ -52,13 +52,18 @@ func (r *workspaceRepository) GetAllWorkspaces(context context.Context) ([]*mode
 	return workspaces, nil
 }
 
-func (r *workspaceRepository) GetWorkspaceByID(context context.Context, id string) (*models.Workspace, error) {
+func (r *workspaceRepository) GetWorkspaceByID(context context.Context, id string, userID string) (*models.Workspace, error) {
 	var workspace models.Workspace
 	ID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
-	err = r.workspace.FindOne(context, bson.M{"_id": ID}).Decode(&workspace)
+	err = r.workspace.FindOne(context, bson.M{"_id": ID,
+		"$or": bson.A{
+			bson.M{"owner": userID},
+			bson.M{"members": userID},
+		},
+	}).Decode(&workspace)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, nil
@@ -92,12 +97,12 @@ func (r *workspaceRepository) GetSharedWorkspaces(context context.Context, userI
 	return &workspaces, nil
 }
 
-func (r *workspaceRepository) DeleteWorkspace(context context.Context, id string) error {
+func (r *workspaceRepository) DeleteWorkspace(context context.Context, id string, userID string) error {
 	ID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
-	_, err = r.workspace.DeleteOne(context, bson.M{"_id": ID})
+	_, err = r.workspace.DeleteOne(context, bson.M{"_id": ID, "owner_id": userID})
 	if err != nil {
 		return err
 	}

@@ -9,15 +9,17 @@ import (
 	"fmt"
 
 	"github.com/chirag3003/collab-draw-backend/graph/model"
+	"github.com/chirag3003/collab-draw-backend/internal/auth"
 	"github.com/chirag3003/collab-draw-backend/internal/models"
 )
 
 // CreateWorkspace is the resolver for the createWorkspace field.
 func (r *mutationResolver) CreateWorkspace(ctx context.Context, input model.NewWorkspace) (string, error) {
+	authContext := auth.ForContext(ctx)
 	workspace := models.Workspace{
 		Name:        input.Name,
 		Description: input.Description,
-		Owner:       input.Owner,
+		Owner:       authContext.Subject,
 		Members:     []string{},
 	}
 	err := r.Repo.Workspace.CreateWorkspace(ctx, &workspace)
@@ -29,7 +31,8 @@ func (r *mutationResolver) CreateWorkspace(ctx context.Context, input model.NewW
 
 // DeleteWorkspace is the resolver for the deleteWorkspace field.
 func (r *mutationResolver) DeleteWorkspace(ctx context.Context, id string) (bool, error) {
-	err := r.Repo.Workspace.DeleteWorkspace(ctx, id)
+	authContext := auth.ForContext(ctx)
+	err := r.Repo.Workspace.DeleteWorkspace(ctx, id, authContext.Subject)
 	if err != nil {
 		return false, fmt.Errorf("failed to delete workspace: %v", err)
 	}
@@ -38,27 +41,29 @@ func (r *mutationResolver) DeleteWorkspace(ctx context.Context, id string) (bool
 
 // Workspaces is the resolver for the workspaces field.
 func (r *queryResolver) Workspaces(ctx context.Context) ([]*model.Workspace, error) {
-	workspaces, err := r.Repo.Workspace.GetAllWorkspaces(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch workspaces: %v", err)
-	}
-	var result []*model.Workspace
-	for _, ws := range workspaces {
-		result = append(result, &model.Workspace{
-			ID:          ws.ID.Hex(),
-			Name:        ws.Name,
-			Description: ws.Description,
-			Owner:       ws.Owner,
-			Members:     ws.Members,
-			CreatedAt:   ws.CreatedAt,
-		})
-	}
-	return result, nil
+	return nil, fmt.Errorf("workspaces query is disabled")
+	//workspaces, err := r.Repo.Workspace.GetAllWorkspaces(ctx)
+	//if err != nil {
+	//	return nil, fmt.Errorf("failed to fetch workspaces: %v", err)
+	//}
+	//var result []*model.Workspace
+	//for _, ws := range workspaces {
+	//	result = append(result, &model.Workspace{
+	//		ID:          ws.ID.Hex(),
+	//		Name:        ws.Name,
+	//		Description: ws.Description,
+	//		Owner:       ws.Owner,
+	//		Members:     ws.Members,
+	//		CreatedAt:   ws.CreatedAt,
+	//	})
+	//}
+	//return result, nil
 }
 
 // Workspace is the resolver for the workspace field.
 func (r *queryResolver) Workspace(ctx context.Context, id string) (*model.Workspace, error) {
-	workspace, err := r.Repo.Workspace.GetWorkspaceByID(ctx, id)
+	authContext := auth.ForContext(ctx)
+	workspace, err := r.Repo.Workspace.GetWorkspaceByID(ctx, id, authContext.Subject)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch workspace: %v", err)
 	}
@@ -77,7 +82,8 @@ func (r *queryResolver) Workspace(ctx context.Context, id string) (*model.Worksp
 
 // WorkspacesByUser is the resolver for the workspacesByUser field.
 func (r *queryResolver) WorkspacesByUser(ctx context.Context, userID string) ([]*model.Workspace, error) {
-	workspaces, err := r.Repo.Workspace.GetWorkspacesByUser(ctx, userID)
+	authContext := auth.ForContext(ctx)
+	workspaces, err := r.Repo.Workspace.GetWorkspacesByUser(ctx, authContext.Subject)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch workspaces for user: %v", err)
 	}
@@ -97,7 +103,8 @@ func (r *queryResolver) WorkspacesByUser(ctx context.Context, userID string) ([]
 
 // SharedWorkspacesByUser is the resolver for the sharedWorkspacesByUser field.
 func (r *queryResolver) SharedWorkspacesByUser(ctx context.Context, userID string) ([]*model.Workspace, error) {
-	workspaces, err := r.Repo.Workspace.GetSharedWorkspaces(ctx, userID)
+	authContext := auth.ForContext(ctx)
+	workspaces, err := r.Repo.Workspace.GetSharedWorkspaces(ctx, authContext.Subject)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch shared workspaces for user: %v", err)
 	}
