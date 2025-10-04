@@ -16,11 +16,12 @@ import (
 
 // CreateProject is the resolver for the createProject field.
 func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewProject) (string, error) {
+	authContext := auth.ForContext(ctx)
 	project := &models.Project{
 		Name:     input.Name,
 		AppState: "",
 		Elements: "",
-		Owner:    input.Owner,
+		Owner:    authContext.Subject,
 	}
 	if input.Description != nil {
 		project.Description = *input.Description
