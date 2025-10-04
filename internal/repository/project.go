@@ -34,7 +34,7 @@ func NewProjectRepository() ProjectRepository {
 }
 
 func (r *projectRepository) NewProject(context context.Context, data *models.Project) error {
-	data.CreatedAt = time.Now().String()
+	data.CreatedAt = time.Now().Format(time.RFC3339)
 	_, err := r.project.InsertOne(context, data)
 	if err != nil {
 		return err

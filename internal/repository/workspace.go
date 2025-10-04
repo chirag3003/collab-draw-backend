@@ -32,7 +32,7 @@ func NewWorkspaceRepository() WorkspaceRepository {
 }
 
 func (r *workspaceRepository) CreateWorkspace(context context.Context, data *models.Workspace) error {
-	data.CreatedAt = time.Now().String()
+	data.CreatedAt = time.Now().Format(time.RFC3339)
 	_, err := r.workspace.InsertOne(context, data)
 	if err != nil {
 		return err
@@ -70,7 +70,7 @@ func (r *workspaceRepository) GetWorkspaceByID(context context.Context, id strin
 
 func (r *workspaceRepository) GetWorkspacesByUser(context context.Context, userID string) (*[]models.Workspace, error) {
 	var workspaces []models.Workspace
-	cursor, err := r.workspace.Find(context, bson.M{"members": userID})
+	cursor, err := r.workspace.Find(context, bson.M{"owner_id": userID})
 	if err != nil {
 		return nil, err
 	}

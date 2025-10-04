@@ -6,6 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.17.81
 	github.com/clerk/clerk-sdk-go/v2 v2.4.2
 	github.com/joho/godotenv v1.5.1
+	github.com/rs/cors v1.11.1
 	github.com/vektah/gqlparser/v2 v2.5.30
 	go.mongodb.org/mongo-driver/v2 v2.3.0
 )
@@ -13,6 +14,7 @@ require (
 require (
 	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
+	github.com/go-chi/chi v1.5.5 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/golang/snappy v1.0.0 // indirect

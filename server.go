@@ -15,7 +15,9 @@ import (
 	"github.com/chirag3003/collab-draw-backend/internal/db"
 	"github.com/chirag3003/collab-draw-backend/internal/repository"
 	"github.com/clerk/clerk-sdk-go/v2"
+	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
+	"github.com/rs/cors"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
@@ -57,10 +59,16 @@ func main() {
 		Cache: lru.New[string](100),
 	})
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	//http.Handle("/query", auth.Middleware()(srv))
-	http.Handle("/query", srv)
+	router := chi.NewRouter()
+	router.Use(cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000", "https://studio.apollographql.com"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler)
+	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	router.Handle("/query", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }
