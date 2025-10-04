@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/chirag3003/collab-draw-backend/graph/model"
+	"github.com/chirag3003/collab-draw-backend/internal/auth"
 	"github.com/chirag3003/collab-draw-backend/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -42,7 +43,8 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewPro
 
 // UpdateProject is the resolver for the updateProject field.
 func (r *mutationResolver) UpdateProject(ctx context.Context, id string, appState string, elements string) (bool, error) {
-	err := r.Repo.Project.UpdateProject(ctx, id, appState, elements)
+	authContext := auth.ForContext(ctx)
+	err := r.Repo.Project.UpdateProject(ctx, id, appState, elements, authContext.Subject)
 	if err != nil {
 		return false, fmt.Errorf("failed to update project: %v", err)
 	}
@@ -51,7 +53,8 @@ func (r *mutationResolver) UpdateProject(ctx context.Context, id string, appStat
 
 // DeleteProject is the resolver for the deleteProject field.
 func (r *mutationResolver) DeleteProject(ctx context.Context, id string) (bool, error) {
-	success, err := r.Repo.Project.DeleteProject(ctx, id)
+	authContext := auth.ForContext(ctx)
+	success, err := r.Repo.Project.DeleteProject(ctx, id, authContext.Subject)
 	if err != nil {
 		return false, fmt.Errorf("failed to delete project: %v", err)
 	}
@@ -88,7 +91,8 @@ func (r *queryResolver) Projects(ctx context.Context) ([]*model.Project, error) 
 
 // Project is the resolver for the project field.
 func (r *queryResolver) Project(ctx context.Context, id string) (*model.Project, error) {
-	project, err := r.Repo.Project.GetProjectByID(ctx, id)
+	authContext := auth.ForContext(ctx)
+	project, err := r.Repo.Project.GetProjectByID(ctx, id, authContext.Subject)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch project: %v", err)
 	}
@@ -115,7 +119,8 @@ func (r *queryResolver) Project(ctx context.Context, id string) (*model.Project,
 
 // ProjectsByUser is the resolver for the projectsByUser field.
 func (r *queryResolver) ProjectsByUser(ctx context.Context, userID string) ([]*model.Project, error) {
-	projects, err := r.Repo.Project.GetProjectsByUserID(ctx, userID)
+	authContext := auth.ForContext(ctx)
+	projects, err := r.Repo.Project.GetProjectsByUserID(ctx, authContext.Subject)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch projects: %v", err)
 	}
@@ -143,6 +148,8 @@ func (r *queryResolver) ProjectsByUser(ctx context.Context, userID string) ([]*m
 
 // ProjectsByWorkspace is the resolver for the projectsByWorkspace field.
 func (r *queryResolver) ProjectsByWorkspace(ctx context.Context, workspaceID string) ([]*model.Project, error) {
+	authContext := auth.ForContext(ctx)
+	fmt.Println("ID: ", authContext.ID)
 	projects, err := r.Repo.Project.GetProjectsByWorkspaceID(ctx, workspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch projects: %v", err)

@@ -18,13 +18,13 @@ type projectRepository struct {
 
 type ProjectRepository interface {
 	NewProject(context context.Context, data *models.Project) error
-	UpdateProject(context context.Context, id string, appState string, elements string) error
+	UpdateProject(context context.Context, id string, appState string, elements string, userID string) error
 	GetAll(context context.Context) ([]*models.Project, error)
-	GetProjectByID(context context.Context, id string) (*models.Project, error)
+	GetProjectByID(context context.Context, id string, userID string) (*models.Project, error)
 	GetProjectsByUserID(context context.Context, userID string) ([]*models.Project, error)
 	GetPersonalProjects(context context.Context, userID string) ([]*models.Project, error)
 	GetProjectsByWorkspaceID(context context.Context, workspaceID string) ([]*models.Project, error)
-	DeleteProject(context context.Context, id string) (bool, error)
+	DeleteProject(context context.Context, id string, userID string) (bool, error)
 }
 
 func NewProjectRepository() ProjectRepository {
@@ -42,7 +42,7 @@ func (r *projectRepository) NewProject(context context.Context, data *models.Pro
 	return nil
 }
 
-func (r *projectRepository) UpdateProject(context context.Context, id string, appState string, elements string) error {
+func (r *projectRepository) UpdateProject(context context.Context, id string, appState string, elements string, userID string) error {
 	ID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return err
@@ -54,7 +54,12 @@ func (r *projectRepository) UpdateProject(context context.Context, id string, ap
 			"updatedAt": time.Now().Unix(),
 		},
 	}
-	_, err = r.project.UpdateOne(context, bson.M{"_id": ID}, update)
+	_, err = r.project.UpdateOne(context, bson.M{"_id": ID,
+		"$or": bson.A{
+			bson.M{"owner": userID},
+			bson.M{"members": userID},
+		},
+	}, update)
 	if err != nil {
 		return err
 	}
@@ -73,13 +78,18 @@ func (r *projectRepository) GetAll(context context.Context) ([]*models.Project, 
 	return projects, nil
 }
 
-func (r *projectRepository) GetProjectByID(context context.Context, id string) (*models.Project, error) {
+func (r *projectRepository) GetProjectByID(context context.Context, id string, userID string) (*models.Project, error) {
 	var project models.Project
 	ID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
-	err = r.project.FindOne(context, bson.M{"_id": ID}).Decode(&project)
+	err = r.project.FindOne(context, bson.M{"_id": ID,
+		"$or": bson.A{
+			bson.M{"owner": userID},
+			bson.M{"members": userID},
+		},
+	}).Decode(&project)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, nil
@@ -133,12 +143,12 @@ func (r *projectRepository) GetProjectsByWorkspaceID(context context.Context, wo
 	return projects, nil
 }
 
-func (r *projectRepository) DeleteProject(context context.Context, id string) (bool, error) {
+func (r *projectRepository) DeleteProject(context context.Context, id string, userID string) (bool, error) {
 	ID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return false, err
 	}
-	result, err := r.project.DeleteOne(context, bson.M{"_id": ID})
+	result, err := r.project.DeleteOne(context, bson.M{"_id": ID, "owner": userID})
 	if err != nil {
 		return false, err
 	}
