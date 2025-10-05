@@ -13,7 +13,7 @@ type userRepository struct {
 }
 
 type UserRepository interface {
-	GetUserByID(ctx context.Context, id string) (*clerk.UserList, error)
+	GetUsersByID(ctx context.Context, id []string) (*clerk.UserList, error)
 	GetUserByEmail(ctx context.Context, email string) (*clerk.UserList, error)
 }
 
@@ -30,10 +30,10 @@ func NewUserRepository() UserRepository {
 	}
 }
 
-func (r *userRepository) GetUserByID(ctx context.Context, id string) (*clerk.UserList, error) {
+func (r *userRepository) GetUsersByID(ctx context.Context, id []string) (*clerk.UserList, error) {
 	// Implement the logic to fetch a user by ID from the database
 	list, err := r.clerk.List(ctx, &user.ListParams{
-		UserIDs: []string{id},
+		UserIDs: id,
 	})
 	if err != nil {
 		return nil, err
