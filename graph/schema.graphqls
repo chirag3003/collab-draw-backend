@@ -3,16 +3,15 @@
 # https://gqlgen.com/getting-started/
 
 
-type User {
-    id: ID!
-    name: String!
-}
-
 type Query {
     _empty: String
 }
 
 
 type Mutation {
+    _empty: String
+}
+
+type Subscription {
     _empty: String
 }

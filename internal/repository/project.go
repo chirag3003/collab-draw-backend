@@ -54,7 +54,7 @@ func (r *projectRepository) UpdateProject(context context.Context, id string, ap
 			"updatedAt": time.Now().Unix(),
 		},
 	}
-	_, err = r.project.UpdateOne(context, bson.M{"_id": ID,
+	res, err := r.project.UpdateOne(context, bson.M{"_id": ID,
 		"$or": bson.A{
 			bson.M{"owner": userID},
 			bson.M{"members": userID},
@@ -62,6 +62,9 @@ func (r *projectRepository) UpdateProject(context context.Context, id string, ap
 	}, update)
 	if err != nil {
 		return err
+	}
+	if res.MatchedCount == 0 {
+		return errors.New("no document found to update")
 	}
 	return nil
 }

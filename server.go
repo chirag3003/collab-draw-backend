@@ -45,13 +45,14 @@ func main() {
 	//setting up Clerk
 	clerk.SetKey(os.Getenv("CLERK_SECRET_KEY"))
 
-	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &resolvers.Resolver{
-		Repo: repo,
-	}}))
+	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: resolvers.NewResolver(repo)}))
 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
+	srv.AddTransport(transport.Websocket{
+		KeepAlivePingInterval: 10,
+	})
 
 	srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 
@@ -69,7 +70,7 @@ func main() {
 	}).Handler)
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	router.Handle("/query", auth.Middleware()(srv))
-	//router.Handle("/query", srv)
+	// router.Handle("/query", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
