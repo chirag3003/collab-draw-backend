@@ -43,28 +43,6 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewPro
 		return "", fmt.Errorf("failed to create project: %v", err)
 	}
 
-	// Fetch the created project to broadcast to potential subscribers
-	createdProject, fetchErr := r.Repo.Project.GetProjectByID(ctx, project.ID.Hex(), authContext.Subject)
-	if fetchErr == nil && createdProject != nil {
-		var workspace *string = nil
-		if createdProject.Workspace != nil {
-			hex := createdProject.Workspace.Hex()
-			workspace = &hex
-		}
-		newProject := &model.Project{
-			ID:          createdProject.ID.Hex(),
-			Name:        createdProject.Name,
-			Description: &createdProject.Description,
-			Owner:       createdProject.Owner,
-			Workspace:   workspace,
-			Personal:    createdProject.Personal,
-			AppState:    createdProject.AppState,
-			Elements:    createdProject.Elements,
-			CreatedAt:   createdProject.CreatedAt,
-		}
-		r.broadcastProjectUpdate(createdProject.ID.Hex(), newProject)
-	}
-
 	return "project created successfully", nil
 }
 
@@ -76,27 +54,10 @@ func (r *mutationResolver) UpdateProject(ctx context.Context, id string, appStat
 		return false, fmt.Errorf("failed to update project: %v", err)
 	}
 
-	// Fetch the updated project to broadcast to subscribers
-	project, err := r.Repo.Project.GetProjectByID(ctx, id, authContext.Subject)
-	if err == nil && project != nil {
-		var workspace *string = nil
-		if project.Workspace != nil {
-			hex := project.Workspace.Hex()
-			workspace = &hex
-		}
-		updatedProject := &model.Project{
-			ID:          project.ID.Hex(),
-			Name:        project.Name,
-			Description: &project.Description,
-			Owner:       project.Owner,
-			Workspace:   workspace,
-			Personal:    project.Personal,
-			AppState:    project.AppState,
-			Elements:    project.Elements,
-			CreatedAt:   project.CreatedAt,
-		}
-		r.broadcastProjectUpdate(id, updatedProject)
-	}
+	r.broadcastProjectUpdate(id, &model.ProjectSubscription{
+		AppState: appState,
+		Elements: elements,
+	})
 
 	return true, nil
 }
@@ -220,7 +181,7 @@ func (r *queryResolver) ProjectsByWorkspace(ctx context.Context, workspaceID str
 }
 
 // Project is the resolver for the project field.
-func (r *subscriptionResolver) Project(ctx context.Context, id string) (<-chan *model.Project, error) {
+func (r *subscriptionResolver) Project(ctx context.Context, id string) (<-chan *model.ProjectSubscription, error) {
 	authContext := auth.ForContext(ctx)
 
 	// Verify user has access to this project
@@ -233,27 +194,15 @@ func (r *subscriptionResolver) Project(ctx context.Context, id string) (<-chan *
 	}
 
 	// Create a channel for this subscription
-	ch := make(chan *model.Project, 1)
+	ch := make(chan *model.ProjectSubscription, 1)
 
 	// Subscribe to project updates
 	r.subscribeToProject(id, ch)
 
 	// Send initial project state
-	var workspace *string = nil
-	if project.Workspace != nil {
-		hex := project.Workspace.Hex()
-		workspace = &hex
-	}
-	initialProject := &model.Project{
-		ID:          project.ID.Hex(),
-		Name:        project.Name,
-		Description: &project.Description,
-		Owner:       project.Owner,
-		Workspace:   workspace,
-		Personal:    project.Personal,
-		AppState:    project.AppState,
-		Elements:    project.Elements,
-		CreatedAt:   project.CreatedAt,
+	initialProject := &model.ProjectSubscription{
+		AppState: project.AppState,
+		Elements: project.Elements,
 	}
 	ch <- initialProject
 

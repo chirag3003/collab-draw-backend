@@ -71,6 +71,11 @@ type ComplexityRoot struct {
 		Workspace   func(childComplexity int) int
 	}
 
+	ProjectSubscription struct {
+		AppState func(childComplexity int) int
+		Elements func(childComplexity int) int
+	}
+
 	Query struct {
 		Empty                  func(childComplexity int) int
 		Project                func(childComplexity int, id string) int
@@ -133,7 +138,7 @@ type QueryResolver interface {
 }
 type SubscriptionResolver interface {
 	Empty(ctx context.Context) (<-chan *string, error)
-	Project(ctx context.Context, id string) (<-chan *model.Project, error)
+	Project(ctx context.Context, id string) (<-chan *model.ProjectSubscription, error)
 }
 
 type executableSchema struct {
@@ -293,6 +298,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Project.Workspace(childComplexity), true
+
+	case "ProjectSubscription.appState":
+		if e.complexity.ProjectSubscription.AppState == nil {
+			break
+		}
+
+		return e.complexity.ProjectSubscription.AppState(childComplexity), true
+	case "ProjectSubscription.elements":
+		if e.complexity.ProjectSubscription.Elements == nil {
+			break
+		}
+
+		return e.complexity.ProjectSubscription.Elements(childComplexity), true
 
 	case "Query._empty":
 		if e.complexity.Query.Empty == nil {
@@ -1431,6 +1449,64 @@ func (ec *executionContext) fieldContext_Project_createdAt(_ context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _ProjectSubscription_appState(ctx context.Context, field graphql.CollectedField, obj *model.ProjectSubscription) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProjectSubscription_appState,
+		func(ctx context.Context) (any, error) {
+			return obj.AppState, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProjectSubscription_appState(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProjectSubscription",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProjectSubscription_elements(ctx context.Context, field graphql.CollectedField, obj *model.ProjectSubscription) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ProjectSubscription_elements,
+		func(ctx context.Context) (any, error) {
+			return obj.Elements, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ProjectSubscription_elements(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProjectSubscription",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query__empty(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2048,7 +2124,7 @@ func (ec *executionContext) _Subscription_project(ctx context.Context, field gra
 			return ec.resolvers.Subscription().Project(ctx, fc.Args["id"].(string))
 		},
 		nil,
-		ec.marshalNProject2ᚖgithubᚗcomᚋchirag3003ᚋcollabᚑdrawᚑbackendᚋgraphᚋmodelᚐProject,
+		ec.marshalNProjectSubscription2ᚖgithubᚗcomᚋchirag3003ᚋcollabᚑdrawᚑbackendᚋgraphᚋmodelᚐProjectSubscription,
 		true,
 		true,
 	)
@@ -2062,26 +2138,12 @@ func (ec *executionContext) fieldContext_Subscription_project(ctx context.Contex
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Project_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Project_name(ctx, field)
-			case "description":
-				return ec.fieldContext_Project_description(ctx, field)
-			case "owner":
-				return ec.fieldContext_Project_owner(ctx, field)
-			case "workspace":
-				return ec.fieldContext_Project_workspace(ctx, field)
-			case "personal":
-				return ec.fieldContext_Project_personal(ctx, field)
 			case "appState":
-				return ec.fieldContext_Project_appState(ctx, field)
+				return ec.fieldContext_ProjectSubscription_appState(ctx, field)
 			case "elements":
-				return ec.fieldContext_Project_elements(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Project_createdAt(ctx, field)
+				return ec.fieldContext_ProjectSubscription_elements(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Project", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type ProjectSubscription", field.Name)
 		},
 	}
 	defer func() {
@@ -4190,6 +4252,50 @@ func (ec *executionContext) _Project(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var projectSubscriptionImplementors = []string{"ProjectSubscription"}
+
+func (ec *executionContext) _ProjectSubscription(ctx context.Context, sel ast.SelectionSet, obj *model.ProjectSubscription) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, projectSubscriptionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ProjectSubscription")
+		case "appState":
+			out.Values[i] = ec._ProjectSubscription_appState(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "elements":
+			out.Values[i] = ec._ProjectSubscription_elements(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -4987,10 +5093,6 @@ func (ec *executionContext) unmarshalNNewWorkspace2githubᚗcomᚋchirag3003ᚋc
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNProject2githubᚗcomᚋchirag3003ᚋcollabᚑdrawᚑbackendᚋgraphᚋmodelᚐProject(ctx context.Context, sel ast.SelectionSet, v model.Project) graphql.Marshaler {
-	return ec._Project(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNProject2ᚕᚖgithubᚗcomᚋchirag3003ᚋcollabᚑdrawᚑbackendᚋgraphᚋmodelᚐProjectᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Project) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -5043,6 +5145,20 @@ func (ec *executionContext) marshalNProject2ᚖgithubᚗcomᚋchirag3003ᚋcolla
 		return graphql.Null
 	}
 	return ec._Project(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNProjectSubscription2githubᚗcomᚋchirag3003ᚋcollabᚑdrawᚑbackendᚋgraphᚋmodelᚐProjectSubscription(ctx context.Context, sel ast.SelectionSet, v model.ProjectSubscription) graphql.Marshaler {
+	return ec._ProjectSubscription(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNProjectSubscription2ᚖgithubᚗcomᚋchirag3003ᚋcollabᚑdrawᚑbackendᚋgraphᚋmodelᚐProjectSubscription(ctx context.Context, sel ast.SelectionSet, v *model.ProjectSubscription) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ProjectSubscription(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {

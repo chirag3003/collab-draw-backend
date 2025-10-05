@@ -31,6 +31,11 @@ type Project struct {
 	CreatedAt   string  `json:"createdAt"`
 }
 
+type ProjectSubscription struct {
+	AppState string `json:"appState"`
+	Elements string `json:"elements"`
+}
+
 type Query struct {
 }
 

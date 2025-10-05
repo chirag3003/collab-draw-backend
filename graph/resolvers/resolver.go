@@ -15,26 +15,26 @@ import (
 
 type Resolver struct {
 	Repo               *repository.Repository
-	projectSubscribers map[string][]chan *model.Project
+	projectSubscribers map[string][]chan *model.ProjectSubscription
 	subscribersMutex   sync.RWMutex
 }
 
 func NewResolver(repo *repository.Repository) *Resolver {
 	return &Resolver{
 		Repo:               repo,
-		projectSubscribers: make(map[string][]chan *model.Project),
+		projectSubscribers: make(map[string][]chan *model.ProjectSubscription),
 	}
 }
 
 // Subscribe adds a subscriber for a specific project
-func (r *Resolver) subscribeToProject(projectID string, ch chan *model.Project) {
+func (r *Resolver) subscribeToProject(projectID string, ch chan *model.ProjectSubscription) {
 	r.subscribersMutex.Lock()
 	defer r.subscribersMutex.Unlock()
 	r.projectSubscribers[projectID] = append(r.projectSubscribers[projectID], ch)
 }
 
 // Unsubscribe removes a subscriber for a specific project
-func (r *Resolver) unsubscribeFromProject(projectID string, ch chan *model.Project) {
+func (r *Resolver) unsubscribeFromProject(projectID string, ch chan *model.ProjectSubscription) {
 	r.subscribersMutex.Lock()
 	defer r.subscribersMutex.Unlock()
 
@@ -54,7 +54,7 @@ func (r *Resolver) unsubscribeFromProject(projectID string, ch chan *model.Proje
 }
 
 // Broadcast sends a project update to all subscribers
-func (r *Resolver) broadcastProjectUpdate(projectID string, project *model.Project) {
+func (r *Resolver) broadcastProjectUpdate(projectID string, project *model.ProjectSubscription) {
 	r.subscribersMutex.RLock()
 	defer r.subscribersMutex.RUnlock()
 
