@@ -23,6 +23,6 @@ extend type Query {
 extend type Mutation {
     createWorkspace(input: NewWorkspace!): String!
     deleteWorkspace(id: ID!): Boolean!
-#    addMemberToWorkspace(workspaceId: ID!, userId: ID!): Boolean!
-#    removeMemberFromWorkspace(workspaceId: ID!, userId: ID!): Boolean!
+    addMemberToWorkspace(workspaceId: ID!, email: String!): Boolean!
+    removeMemberFromWorkspace(workspaceId: ID!, userId: ID!): Boolean!
 }

@@ -23,6 +23,8 @@ type WorkspaceRepository interface {
 	GetWorkspacesByUser(context context.Context, userID string) (*[]models.Workspace, error)
 	GetSharedWorkspaces(context context.Context, userID string) (*[]models.Workspace, error)
 	DeleteWorkspace(context context.Context, id string, userID string) error
+	AddMemberToWorkspace(context context.Context, workspaceID string, userID string) error
+	RemoveMemberFromWorkspace(context context.Context, workspaceID string, userID string) error
 }
 
 func NewWorkspaceRepository() WorkspaceRepository {
@@ -103,6 +105,38 @@ func (r *workspaceRepository) DeleteWorkspace(context context.Context, id string
 		return err
 	}
 	_, err = r.workspace.DeleteOne(context, bson.M{"_id": ID, "owner_id": userID})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *workspaceRepository) AddMemberToWorkspace(context context.Context, workspaceID string, userID string) error {
+	ID, err := bson.ObjectIDFromHex(workspaceID)
+	if err != nil {
+		return err
+	}
+	_, err = r.workspace.UpdateOne(context, bson.M{"_id": ID}, bson.M{
+		"$addToSet": bson.M{
+			"members": userID,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *workspaceRepository) RemoveMemberFromWorkspace(context context.Context, workspaceID string, userID string) error {
+	ID, err := bson.ObjectIDFromHex(workspaceID)
+	if err != nil {
+		return err
+	}
+	_, err = r.workspace.UpdateOne(context, bson.M{"_id": ID}, bson.M{
+		"$pull": bson.M{
+			"members": userID,
+		},
+	})
 	if err != nil {
 		return err
 	}

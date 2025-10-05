@@ -1,5 +1,7 @@
 package resolvers
 
+//go:generate go run github.com/99designs/gqlgen generate
+
 import "github.com/chirag3003/collab-draw-backend/internal/repository"
 
 // This file will not be regenerated automatically.

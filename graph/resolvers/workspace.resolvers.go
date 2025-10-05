@@ -39,6 +39,47 @@ func (r *mutationResolver) DeleteWorkspace(ctx context.Context, id string) (bool
 	return true, nil
 }
 
+// AddMemberToWorkspace is the resolver for the addMemberToWorkspace field.
+func (r *mutationResolver) AddMemberToWorkspace(ctx context.Context, workspaceID string, email string) (bool, error) {
+	authContext := auth.ForContext(ctx)
+	workspace, err := r.Repo.Workspace.GetWorkspaceByID(ctx, workspaceID, authContext.Subject)
+	if err != nil {
+		return false, fmt.Errorf("failed to fetch workspace: %v", err)
+	}
+	if workspace == nil || workspace.Owner != authContext.Subject {
+		return false, fmt.Errorf("workspace not found")
+	}
+	user, err := r.Repo.User.GetUserByEmail(ctx, email)
+	if err != nil {
+		return false, fmt.Errorf("failed to fetch user by email: %v", err)
+	}
+	if user == nil || len(user.Users) == 0 {
+		return false, fmt.Errorf("user with email %s not found", email)
+	}
+	err = r.Repo.Workspace.AddMemberToWorkspace(ctx, workspaceID, user.Users[0].ID)
+	if err != nil {
+		return false, fmt.Errorf("failed to add member to workspace: %v", err)
+	}
+	return true, nil
+}
+
+// RemoveMemberFromWorkspace is the resolver for the removeMemberFromWorkspace field.
+func (r *mutationResolver) RemoveMemberFromWorkspace(ctx context.Context, workspaceID string, userID string) (bool, error) {
+	authContext := auth.ForContext(ctx)
+	workspace, err := r.Repo.Workspace.GetWorkspaceByID(ctx, workspaceID, authContext.Subject)
+	if err != nil {
+		return false, fmt.Errorf("failed to fetch workspace: %v", err)
+	}
+	if workspace == nil || workspace.Owner != authContext.Subject {
+		return false, fmt.Errorf("workspace not found")
+	}
+	err = r.Repo.Workspace.RemoveMemberFromWorkspace(ctx, workspaceID, userID)
+	if err != nil {
+		return false, fmt.Errorf("failed to remove member from workspace: %v", err)
+	}
+	return true, nil
+}
+
 // Workspaces is the resolver for the workspaces field.
 func (r *queryResolver) Workspaces(ctx context.Context) ([]*model.Workspace, error) {
 	return nil, fmt.Errorf("workspaces query is disabled")
