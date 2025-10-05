@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/chirag3003/collab-draw-backend/graph"
 	"github.com/chirag3003/collab-draw-backend/graph/resolvers"
+	"github.com/chirag3003/collab-draw-backend/internal/auth"
 	"github.com/chirag3003/collab-draw-backend/internal/db"
 	"github.com/chirag3003/collab-draw-backend/internal/repository"
 	"github.com/clerk/clerk-sdk-go/v2"
@@ -67,8 +68,8 @@ func main() {
 		AllowCredentials: true,
 	}).Handler)
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	//router.Handle("/query", auth.Middleware()(srv))
-	router.Handle("/query", srv)
+	router.Handle("/query", auth.Middleware()(srv))
+	//router.Handle("/query", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, router))

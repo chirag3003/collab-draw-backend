@@ -1,9 +1,20 @@
+type WorkspaceMember{
+    id: ID!
+    email: String!
+    imageURL: String!
+    fullName: String!
+}
+
+type WorkspaceMembersResponse {
+    members: [WorkspaceMember!]!
+    owner: WorkspaceMember!
+}
 type Workspace {
     id: ID!
     name: String!
     description: String!
     owner: ID!
-    members: [ID!]!
+    members: WorkspaceMembersResponse
     createdAt: String!
 }
 

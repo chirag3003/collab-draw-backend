@@ -52,10 +52,22 @@ type User struct {
 }
 
 type Workspace struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Owner       string   `json:"owner"`
-	Members     []string `json:"members"`
-	CreatedAt   string   `json:"createdAt"`
+	ID          string                    `json:"id"`
+	Name        string                    `json:"name"`
+	Description string                    `json:"description"`
+	Owner       string                    `json:"owner"`
+	Members     *WorkspaceMembersResponse `json:"members,omitempty"`
+	CreatedAt   string                    `json:"createdAt"`
+}
+
+type WorkspaceMember struct {
+	ID       string `json:"id"`
+	Email    string `json:"email"`
+	ImageURL string `json:"imageURL"`
+	FullName string `json:"fullName"`
+}
+
+type WorkspaceMembersResponse struct {
+	Members []*WorkspaceMember `json:"members"`
+	Owner   *WorkspaceMember   `json:"owner"`
 }
