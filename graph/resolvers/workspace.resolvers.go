@@ -111,27 +111,39 @@ func (r *queryResolver) Workspace(ctx context.Context, id string) (*model.Worksp
 	if workspace == nil {
 		return nil, nil // or return an error if preferred
 	}
-	owner, err := r.Repo.User.GetUsersByID(ctx, []string{workspace.Owner})
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch owner details: %v", err)
-	}
-	workspaceMembers := model.WorkspaceMembersResponse{
-		Owner: &model.WorkspaceMember{
-			ID:       owner.Users[0].ID,
-			Email:    owner.Users[0].EmailAddresses[0].EmailAddress,
-			FullName: *owner.Users[0].FirstName + " " + *owner.Users[0].LastName,
-			ImageURL: *owner.Users[0].ImageURL,
-		},
-	}
-	members, err := r.Repo.User.GetUsersByID(ctx, workspace.Members)
+
+	members, err := r.Repo.User.GetUsersByID(ctx, append([]string{workspace.Owner}, workspace.Members...))
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch member details: %v", err)
 	}
-	for _, member := range members.Users {
+
+	owner := members.Users[0]
+
+	workspaceMembers := model.WorkspaceMembersResponse{
+		Owner: &model.WorkspaceMember{
+			ID:       owner.ID,
+			Email:    owner.EmailAddresses[0].EmailAddress,
+			FullName: *owner.FirstName + " " + *owner.LastName,
+			ImageURL: *owner.ImageURL,
+		},
+	}
+
+	for i := 1; i < len(members.Users); i++ {
+		member := members.Users[i]
 		workspaceMembers.Members = append(workspaceMembers.Members, &model.WorkspaceMember{
-			ID:       member.ID,
-			Email:    member.EmailAddresses[0].EmailAddress,
-			FullName: *member.FirstName + " " + *member.LastName,
+			ID:    member.ID,
+			Email: member.EmailAddresses[0].EmailAddress,
+			FullName: func() string {
+				first := ""
+				last := ""
+				if member.FirstName != nil {
+					first = *member.FirstName
+				}
+				if member.LastName != nil {
+					last = *member.LastName
+				}
+				return first + " " + last
+			}(),
 			ImageURL: *member.ImageURL,
 		})
 	}

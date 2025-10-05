@@ -20,7 +20,7 @@ type ProjectRepository interface {
 	NewProject(context context.Context, data *models.Project) error
 	UpdateProject(context context.Context, id string, appState string, elements string, userID string) error
 	GetAll(context context.Context) ([]*models.Project, error)
-	GetProjectByID(context context.Context, id string) (*models.Project, error)
+	GetProjectByID(context context.Context, id string, userID string) (*models.Project, error)
 	GetProjectsByUserID(context context.Context, userID string) ([]*models.Project, error)
 	GetPersonalProjects(context context.Context, userID string) ([]*models.Project, error)
 	GetProjectsByWorkspaceID(context context.Context, workspaceID string) ([]*models.Project, error)
@@ -78,13 +78,18 @@ func (r *projectRepository) GetAll(context context.Context) ([]*models.Project, 
 	return projects, nil
 }
 
-func (r *projectRepository) GetProjectByID(context context.Context, id string) (*models.Project, error) {
+func (r *projectRepository) GetProjectByID(context context.Context, id string, userID string) (*models.Project, error) {
 	var project models.Project
 	ID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
-	err = r.project.FindOne(context, bson.M{"_id": ID}).Decode(&project)
+	err = r.project.FindOne(context, bson.M{"_id": ID,
+		"$or": bson.A{
+			bson.M{"owner": userID},
+			bson.M{"members": userID},
+		},
+	}).Decode(&project)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, nil

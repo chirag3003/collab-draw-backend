@@ -7,6 +7,7 @@ type Project struct {
 	Name        string         `bson:"name" json:"name"`
 	Description string         `bson:"description" json:"description"`
 	Owner       string         `bson:"owner" json:"owner"`
+	Members     []string       `bson:"members" json:"members"`
 	Workspace   *bson.ObjectID `bson:"workspace,omitempty" json:"workspace,omitempty"`
 	Personal    bool           `bson:"personal" json:"personal"`
 	AppState    string         `bson:"app_state" json:"appState"`

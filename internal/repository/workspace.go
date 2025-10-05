@@ -14,6 +14,7 @@ import (
 
 type workspaceRepository struct {
 	workspace *mongo.Collection
+	projects  *mongo.Collection
 }
 
 type WorkspaceRepository interface {
@@ -30,6 +31,7 @@ type WorkspaceRepository interface {
 func NewWorkspaceRepository() WorkspaceRepository {
 	return &workspaceRepository{
 		workspace: db.GetCollection(config.WORKSPACE),
+		projects:  db.GetCollection(config.PROJECT),
 	}
 }
 
@@ -124,6 +126,14 @@ func (r *workspaceRepository) AddMemberToWorkspace(context context.Context, work
 	if err != nil {
 		return err
 	}
+	_, err = r.projects.UpdateMany(context, bson.M{"workspace": ID}, bson.M{
+		"$addToSet": bson.M{
+			"members": userID,
+		},
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -133,6 +143,14 @@ func (r *workspaceRepository) RemoveMemberFromWorkspace(context context.Context,
 		return err
 	}
 	_, err = r.workspace.UpdateOne(context, bson.M{"_id": ID}, bson.M{
+		"$pull": bson.M{
+			"members": userID,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	_, err = r.projects.UpdateMany(context, bson.M{"workspace": ID}, bson.M{
 		"$pull": bson.M{
 			"members": userID,
 		},
