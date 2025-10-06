@@ -63,7 +63,7 @@ func main() {
 				}
 			}
 
-			log.Printf("WebSocket InitFunc - Auth header: %v", authHeader != "")
+			//log.Printf("WebSocket InitFunc - Auth header: %v", authHeader != "")
 
 			// If we have authorization, validate it
 			if authHeader != "" {
@@ -82,7 +82,7 @@ func main() {
 					if ok {
 						validatedCtx = context.WithValue(ctx, auth.UserContextKey, claims)
 						authOk = true
-						log.Printf("WebSocket auth successful for user: %v", claims.Subject)
+						//log.Printf("WebSocket auth successful for user: %v", claims.Subject)
 					}
 				})
 
@@ -140,7 +140,7 @@ func main() {
 	router.Handle("/query", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if this is a WebSocket upgrade request
 		if r.Header.Get("Upgrade") == "websocket" {
-			log.Printf("WebSocket upgrade request detected, bypassing auth middleware")
+			//log.Printf("WebSocket upgrade request detected, bypassing auth middleware")
 			srv.ServeHTTP(w, r)
 			return
 		}
