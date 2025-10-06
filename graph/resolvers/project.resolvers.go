@@ -198,11 +198,12 @@ func (r *subscriptionResolver) Project(ctx context.Context, id string) (<-chan *
 
 	// Subscribe to project updates
 	socketID := r.subscribeToProject(id, ch)
-
+	println("Subscribed to project:", id, "with socketID:", socketID)
 	// Send initial project state
 	initialProject := &model.ProjectSubscription{
 		AppState: project.AppState,
 		Elements: project.Elements,
+		SocketID: socketID,
 	}
 	ch <- initialProject
 

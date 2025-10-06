@@ -3,6 +3,7 @@ package resolvers
 //go:generate go run github.com/99designs/gqlgen generate
 
 import (
+	"fmt"
 	"math/rand/v2"
 	"sync"
 
@@ -32,13 +33,24 @@ func NewResolver(repo *repository.Repository) *Resolver {
 	}
 }
 
+func generateRandom8DigitString() string {
+	// The range for an 8-digit number is [10000000, 99999999].
+	// We generate a number in the range [0, 89999999] and add 10000000 to it.
+	minN := 10000000
+	maxNum := 90000000 // maxNum is exclusive in rand.Intn, so 99999999 is maxNum - 1
+	randomNumber := rand.IntN(maxNum) + minN
+
+	// Convert the integer to a string
+	return fmt.Sprintf("%d", randomNumber)
+}
+
 // Subscribe adds a subscriber for a specific project
 func (r *Resolver) subscribeToProject(projectID string, ch chan *model.ProjectSubscription) string {
 	r.subscribersMutex.Lock()
 	defer r.subscribersMutex.Unlock()
 	subscriber := ProjectSubscriber{
 		channel:  ch,
-		sockedID: string(rand.Int32()),
+		sockedID: generateRandom8DigitString(),
 	}
 	r.projectSubscribers[projectID] = append(r.projectSubscribers[projectID], subscriber)
 	return subscriber.sockedID
