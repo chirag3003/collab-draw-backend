@@ -736,7 +736,7 @@ func (ec *executionContext) field_Mutation_updateProject_args(ctx context.Contex
 		return nil, err
 	}
 	args["elements"] = arg2
-	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "socketID", ec.unmarshalNString2string)
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "socketID", ec.unmarshalNID2string)
 	if err != nil {
 		return nil, err
 	}
