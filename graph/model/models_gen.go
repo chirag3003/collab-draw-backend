@@ -34,6 +34,7 @@ type Project struct {
 type ProjectSubscription struct {
 	AppState string `json:"appState"`
 	Elements string `json:"elements"`
+	SocketID string `json:"socketID"`
 }
 
 type Query struct {

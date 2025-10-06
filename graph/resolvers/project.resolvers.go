@@ -47,7 +47,7 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewPro
 }
 
 // UpdateProject is the resolver for the updateProject field.
-func (r *mutationResolver) UpdateProject(ctx context.Context, id string, appState string, elements string) (bool, error) {
+func (r *mutationResolver) UpdateProject(ctx context.Context, id string, appState string, elements string, socketID string) (bool, error) {
 	authContext := auth.ForContext(ctx)
 	err := r.Repo.Project.UpdateProject(ctx, id, appState, elements, authContext.Subject)
 	if err != nil {
@@ -57,7 +57,7 @@ func (r *mutationResolver) UpdateProject(ctx context.Context, id string, appStat
 	r.broadcastProjectUpdate(id, &model.ProjectSubscription{
 		AppState: appState,
 		Elements: elements,
-	})
+	}, socketID)
 
 	return true, nil
 }
@@ -197,7 +197,7 @@ func (r *subscriptionResolver) Project(ctx context.Context, id string) (<-chan *
 	ch := make(chan *model.ProjectSubscription, 1)
 
 	// Subscribe to project updates
-	r.subscribeToProject(id, ch)
+	socketID := r.subscribeToProject(id, ch)
 
 	// Send initial project state
 	initialProject := &model.ProjectSubscription{
@@ -207,10 +207,10 @@ func (r *subscriptionResolver) Project(ctx context.Context, id string) (<-chan *
 	ch <- initialProject
 
 	// Clean up when context is done
-	go func() {
+	go func(socketID string) {
 		<-ctx.Done()
-		r.unsubscribeFromProject(id, ch)
-	}()
+		r.unsubscribeFromProject(id, socketID)
+	}(socketID)
 
 	return ch, nil
 }
