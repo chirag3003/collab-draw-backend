@@ -86,6 +86,7 @@ func (r *Resolver) broadcastProjectUpdate(projectID string, project *model.Proje
 			if subscriber.sockedID == fromID {
 				continue
 			}
+			project.SocketID = subscriber.sockedID
 			select {
 			case subscriber.channel <- project:
 			default:

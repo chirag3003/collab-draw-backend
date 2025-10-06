@@ -18,7 +18,7 @@ type projectRepository struct {
 
 type ProjectRepository interface {
 	NewProject(context context.Context, data *models.Project) error
-	UpdateProject(context context.Context, id string, appState string, elements string, userID string) error
+	UpdateProject(context context.Context, id string, elements string, userID string) error
 	GetAll(context context.Context) ([]*models.Project, error)
 	GetProjectByID(context context.Context, id string, userID string) (*models.Project, error)
 	GetProjectsByUserID(context context.Context, userID string) ([]*models.Project, error)
@@ -42,14 +42,13 @@ func (r *projectRepository) NewProject(context context.Context, data *models.Pro
 	return nil
 }
 
-func (r *projectRepository) UpdateProject(context context.Context, id string, appState string, elements string, userID string) error {
+func (r *projectRepository) UpdateProject(context context.Context, id string, elements string, userID string) error {
 	ID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
 	update := bson.M{
 		"$set": bson.M{
-			"app_state": appState,
 			"elements":  elements,
 			"updatedAt": time.Now().Unix(),
 		},

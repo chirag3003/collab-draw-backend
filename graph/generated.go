@@ -56,11 +56,10 @@ type ComplexityRoot struct {
 		DeleteWorkspace           func(childComplexity int, id string) int
 		Empty                     func(childComplexity int) int
 		RemoveMemberFromWorkspace func(childComplexity int, workspaceID string, userID string) int
-		UpdateProject             func(childComplexity int, id string, appState string, elements string, socketID string) int
+		UpdateProject             func(childComplexity int, id string, elements string, socketID string) int
 	}
 
 	Project struct {
-		AppState    func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
 		Description func(childComplexity int) int
 		Elements    func(childComplexity int) int
@@ -72,7 +71,6 @@ type ComplexityRoot struct {
 	}
 
 	ProjectSubscription struct {
-		AppState func(childComplexity int) int
 		Elements func(childComplexity int) int
 		SocketID func(childComplexity int) int
 	}
@@ -119,7 +117,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	Empty(ctx context.Context) (*string, error)
 	CreateProject(ctx context.Context, input model.NewProject) (string, error)
-	UpdateProject(ctx context.Context, id string, appState string, elements string, socketID string) (bool, error)
+	UpdateProject(ctx context.Context, id string, elements string, socketID string) (bool, error)
 	DeleteProject(ctx context.Context, id string) (bool, error)
 	CreateWorkspace(ctx context.Context, input model.NewWorkspace) (string, error)
 	DeleteWorkspace(ctx context.Context, id string) (bool, error)
@@ -243,14 +241,8 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateProject(childComplexity, args["id"].(string), args["appState"].(string), args["elements"].(string), args["socketID"].(string)), true
+		return e.complexity.Mutation.UpdateProject(childComplexity, args["id"].(string), args["elements"].(string), args["socketID"].(string)), true
 
-	case "Project.appState":
-		if e.complexity.Project.AppState == nil {
-			break
-		}
-
-		return e.complexity.Project.AppState(childComplexity), true
 	case "Project.createdAt":
 		if e.complexity.Project.CreatedAt == nil {
 			break
@@ -300,12 +292,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Project.Workspace(childComplexity), true
 
-	case "ProjectSubscription.appState":
-		if e.complexity.ProjectSubscription.AppState == nil {
-			break
-		}
-
-		return e.complexity.ProjectSubscription.AppState(childComplexity), true
 	case "ProjectSubscription.elements":
 		if e.complexity.ProjectSubscription.Elements == nil {
 			break
@@ -726,21 +712,16 @@ func (ec *executionContext) field_Mutation_updateProject_args(ctx context.Contex
 		return nil, err
 	}
 	args["id"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "appState", ec.unmarshalNString2string)
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "elements", ec.unmarshalNString2string)
 	if err != nil {
 		return nil, err
 	}
-	args["appState"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "elements", ec.unmarshalNString2string)
+	args["elements"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "socketID", ec.unmarshalNID2string)
 	if err != nil {
 		return nil, err
 	}
-	args["elements"] = arg2
-	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "socketID", ec.unmarshalNID2string)
-	if err != nil {
-		return nil, err
-	}
-	args["socketID"] = arg3
+	args["socketID"] = arg2
 	return args, nil
 }
 
@@ -962,7 +943,7 @@ func (ec *executionContext) _Mutation_updateProject(ctx context.Context, field g
 		ec.fieldContext_Mutation_updateProject,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().UpdateProject(ctx, fc.Args["id"].(string), fc.Args["appState"].(string), fc.Args["elements"].(string), fc.Args["socketID"].(string))
+			return ec.resolvers.Mutation().UpdateProject(ctx, fc.Args["id"].(string), fc.Args["elements"].(string), fc.Args["socketID"].(string))
 		},
 		nil,
 		ec.marshalNBoolean2bool,
@@ -1374,35 +1355,6 @@ func (ec *executionContext) fieldContext_Project_personal(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Project_appState(ctx context.Context, field graphql.CollectedField, obj *model.Project) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Project_appState,
-		func(ctx context.Context) (any, error) {
-			return obj.AppState, nil
-		},
-		nil,
-		ec.marshalNString2string,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Project_appState(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Project",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Project_elements(ctx context.Context, field graphql.CollectedField, obj *model.Project) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1451,35 +1403,6 @@ func (ec *executionContext) _Project_createdAt(ctx context.Context, field graphq
 func (ec *executionContext) fieldContext_Project_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Project",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ProjectSubscription_appState(ctx context.Context, field graphql.CollectedField, obj *model.ProjectSubscription) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_ProjectSubscription_appState,
-		func(ctx context.Context) (any, error) {
-			return obj.AppState, nil
-		},
-		nil,
-		ec.marshalNString2string,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_ProjectSubscription_appState(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ProjectSubscription",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1613,8 +1536,6 @@ func (ec *executionContext) fieldContext_Query_projects(_ context.Context, field
 				return ec.fieldContext_Project_workspace(ctx, field)
 			case "personal":
 				return ec.fieldContext_Project_personal(ctx, field)
-			case "appState":
-				return ec.fieldContext_Project_appState(ctx, field)
 			case "elements":
 				return ec.fieldContext_Project_elements(ctx, field)
 			case "createdAt":
@@ -1663,8 +1584,6 @@ func (ec *executionContext) fieldContext_Query_project(ctx context.Context, fiel
 				return ec.fieldContext_Project_workspace(ctx, field)
 			case "personal":
 				return ec.fieldContext_Project_personal(ctx, field)
-			case "appState":
-				return ec.fieldContext_Project_appState(ctx, field)
 			case "elements":
 				return ec.fieldContext_Project_elements(ctx, field)
 			case "createdAt":
@@ -1724,8 +1643,6 @@ func (ec *executionContext) fieldContext_Query_projectsByUser(ctx context.Contex
 				return ec.fieldContext_Project_workspace(ctx, field)
 			case "personal":
 				return ec.fieldContext_Project_personal(ctx, field)
-			case "appState":
-				return ec.fieldContext_Project_appState(ctx, field)
 			case "elements":
 				return ec.fieldContext_Project_elements(ctx, field)
 			case "createdAt":
@@ -1785,8 +1702,6 @@ func (ec *executionContext) fieldContext_Query_projectsByWorkspace(ctx context.C
 				return ec.fieldContext_Project_workspace(ctx, field)
 			case "personal":
 				return ec.fieldContext_Project_personal(ctx, field)
-			case "appState":
-				return ec.fieldContext_Project_appState(ctx, field)
 			case "elements":
 				return ec.fieldContext_Project_elements(ctx, field)
 			case "createdAt":
@@ -2179,8 +2094,6 @@ func (ec *executionContext) fieldContext_Subscription_project(ctx context.Contex
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "appState":
-				return ec.fieldContext_ProjectSubscription_appState(ctx, field)
 			case "elements":
 				return ec.fieldContext_ProjectSubscription_elements(ctx, field)
 			case "socketID":
@@ -4257,11 +4170,6 @@ func (ec *executionContext) _Project(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "appState":
-			out.Values[i] = ec._Project_appState(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "elements":
 			out.Values[i] = ec._Project_elements(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4306,11 +4214,6 @@ func (ec *executionContext) _ProjectSubscription(ctx context.Context, sel ast.Se
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ProjectSubscription")
-		case "appState":
-			out.Values[i] = ec._ProjectSubscription_appState(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "elements":
 			out.Values[i] = ec._ProjectSubscription_elements(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

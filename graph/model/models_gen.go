@@ -26,13 +26,11 @@ type Project struct {
 	Owner       string  `json:"owner"`
 	Workspace   *string `json:"workspace,omitempty"`
 	Personal    bool    `json:"personal"`
-	AppState    string  `json:"appState"`
 	Elements    string  `json:"elements"`
 	CreatedAt   string  `json:"createdAt"`
 }
 
 type ProjectSubscription struct {
-	AppState string `json:"appState"`
 	Elements string `json:"elements"`
 	SocketID string `json:"socketID"`
 }

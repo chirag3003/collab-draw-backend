@@ -18,7 +18,6 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewPro
 	authContext := auth.ForContext(ctx)
 	project := &models.Project{
 		Name:     input.Name,
-		AppState: "",
 		Elements: "",
 		Owner:    authContext.Subject,
 	}
@@ -47,17 +46,18 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewPro
 }
 
 // UpdateProject is the resolver for the updateProject field.
-func (r *mutationResolver) UpdateProject(ctx context.Context, id string, appState string, elements string, socketID string) (bool, error) {
+func (r *mutationResolver) UpdateProject(ctx context.Context, id string, elements string, socketID string) (bool, error) {
 	authContext := auth.ForContext(ctx)
-	err := r.Repo.Project.UpdateProject(ctx, id, appState, elements, authContext.Subject)
+	fmt.Printf("Update Request from %s\n", socketID)
+	err := r.Repo.Project.UpdateProject(ctx, id, elements, authContext.Subject)
 	if err != nil {
 		return false, fmt.Errorf("failed to update project: %v", err)
 	}
 
 	r.broadcastProjectUpdate(id, &model.ProjectSubscription{
-		AppState: appState,
 		Elements: elements,
 	}, socketID)
+	fmt.Println("Update Response")
 
 	return true, nil
 }
@@ -92,7 +92,6 @@ func (r *queryResolver) Projects(ctx context.Context) ([]*model.Project, error) 
 			Owner:       p.Owner,
 			Workspace:   workspace,
 			Personal:    p.Personal,
-			AppState:    p.AppState,
 			Elements:    p.Elements,
 			CreatedAt:   p.CreatedAt,
 		})
@@ -122,7 +121,6 @@ func (r *queryResolver) Project(ctx context.Context, id string) (*model.Project,
 		Owner:       project.Owner,
 		Workspace:   workspace,
 		Personal:    project.Personal,
-		AppState:    project.AppState,
 		Elements:    project.Elements,
 		CreatedAt:   project.CreatedAt,
 	}, nil
@@ -149,7 +147,6 @@ func (r *queryResolver) ProjectsByUser(ctx context.Context, userID string) ([]*m
 			Owner:       p.Owner,
 			Workspace:   workspace,
 			Personal:    p.Personal,
-			AppState:    p.AppState,
 			Elements:    p.Elements,
 			CreatedAt:   p.CreatedAt,
 		})
@@ -172,7 +169,6 @@ func (r *queryResolver) ProjectsByWorkspace(ctx context.Context, workspaceID str
 			Owner:       p.Owner,
 			Workspace:   &workspaceID,
 			Personal:    p.Personal,
-			AppState:    p.AppState,
 			Elements:    p.Elements,
 			CreatedAt:   p.CreatedAt,
 		})
@@ -182,6 +178,7 @@ func (r *queryResolver) ProjectsByWorkspace(ctx context.Context, workspaceID str
 
 // Project is the resolver for the project field.
 func (r *subscriptionResolver) Project(ctx context.Context, id string) (<-chan *model.ProjectSubscription, error) {
+	fmt.Println("Trying to subscribe to project:", id)
 	authContext := auth.ForContext(ctx)
 
 	// Verify user has access to this project
@@ -201,7 +198,6 @@ func (r *subscriptionResolver) Project(ctx context.Context, id string) (<-chan *
 	println("Subscribed to project:", id, "with socketID:", socketID)
 	// Send initial project state
 	initialProject := &model.ProjectSubscription{
-		AppState: project.AppState,
 		Elements: project.Elements,
 		SocketID: socketID,
 	}
