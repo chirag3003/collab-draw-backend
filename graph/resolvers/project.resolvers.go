@@ -33,6 +33,9 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewPro
 		if workspace == nil {
 			return "", fmt.Errorf("workspace not found")
 		}
+		if workspace.Owner != authContext.Subject {
+			return "", fmt.Errorf("only workspace owner can create project in it")
+		}
 		project.Workspace = &workspace.ID
 		project.Members = workspace.Members
 	}
