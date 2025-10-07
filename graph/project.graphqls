@@ -26,6 +26,7 @@ extend type Query {
     projects: [Project!]!
     project(id: ID!): Project
     projectsByUser(userId: ID!): [Project!]!
+    projectsPersonalByUser(userId: ID!): [Project!]!
     projectsByWorkspace(workspaceId: ID!): [Project!]!
 }
 

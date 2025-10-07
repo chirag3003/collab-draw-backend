@@ -114,12 +114,8 @@ func (r *projectRepository) GetProjectsByUserID(context context.Context, userID 
 }
 
 func (r *projectRepository) GetPersonalProjects(context context.Context, userID string) ([]*models.Project, error) {
-	ID, err := bson.ObjectIDFromHex(userID)
-	if err != nil {
-		return nil, err
-	}
 	var projects []*models.Project
-	cursor, err := r.project.Find(context, bson.M{"personal": true, "owner": ID})
+	cursor, err := r.project.Find(context, bson.M{"owner": userID, "personal": true})
 	if err != nil {
 		return nil, err
 	}

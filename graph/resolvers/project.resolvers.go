@@ -20,6 +20,7 @@ func (r *mutationResolver) CreateProject(ctx context.Context, input model.NewPro
 		Name:     input.Name,
 		Elements: "",
 		Owner:    authContext.Subject,
+		Personal: input.Personal,
 	}
 	if input.Description != nil {
 		project.Description = *input.Description
@@ -149,6 +150,28 @@ func (r *queryResolver) ProjectsByUser(ctx context.Context, userID string) ([]*m
 			Description: &p.Description,
 			Owner:       p.Owner,
 			Workspace:   workspace,
+			Personal:    p.Personal,
+			Elements:    p.Elements,
+			CreatedAt:   p.CreatedAt,
+		})
+	}
+	return result, nil
+}
+
+// ProjectsPersonalByUser is the resolver for the projectsPersonalByUser field.
+func (r *queryResolver) ProjectsPersonalByUser(ctx context.Context, userID string) ([]*model.Project, error) {
+	authContext := auth.ForContext(ctx)
+	projects, err := r.Repo.Project.GetPersonalProjects(ctx, authContext.Subject)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch projects: %v", err)
+	}
+	var result []*model.Project
+	for _, p := range projects {
+		result = append(result, &model.Project{
+			ID:          p.ID.Hex(),
+			Name:        p.Name,
+			Description: &p.Description,
+			Owner:       p.Owner,
 			Personal:    p.Personal,
 			Elements:    p.Elements,
 			CreatedAt:   p.CreatedAt,
