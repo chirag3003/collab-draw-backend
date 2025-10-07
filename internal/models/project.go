@@ -12,5 +12,5 @@ type Project struct {
 	Personal    bool           `bson:"personal" json:"personal"`
 	Elements    string         `bson:"elements" json:"elements"`
 	CreatedAt   string         `bson:"created_at" json:"createdAt"`
-	UpdatedAt   int            `bson:"updated_at" json:"updatedAt"`
+	UpdatedAt   string         `bson:"updated_at" json:"updatedAt"`
 }

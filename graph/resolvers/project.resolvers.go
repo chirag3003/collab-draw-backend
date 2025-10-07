@@ -7,6 +7,7 @@ package resolvers
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/chirag3003/collab-draw-backend/graph/model"
 	"github.com/chirag3003/collab-draw-backend/internal/auth"
@@ -74,6 +75,19 @@ func (r *mutationResolver) DeleteProject(ctx context.Context, id string) (bool, 
 		return false, fmt.Errorf("failed to delete project: %v", err)
 	}
 	return success, nil
+}
+
+// UpdateProjectMetadata is the resolver for the updateProjectMetadata field.
+func (r *mutationResolver) UpdateProjectMetadata(ctx context.Context, id string, name string, description string) (bool, error) {
+	authContext := auth.ForContext(ctx)
+	if strings.TrimSpace(name) == "" {
+		return false, fmt.Errorf("project name cannot be empty")
+	}
+	err := r.Repo.Project.UpdateProjectMetadata(ctx, id, name, description, authContext.Subject)
+	if err != nil {
+		return false, fmt.Errorf("failed to update project metadata: %v", err)
+	}
+	return true, nil
 }
 
 // Projects is the resolver for the projects field.

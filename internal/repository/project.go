@@ -19,6 +19,7 @@ type projectRepository struct {
 type ProjectRepository interface {
 	NewProject(context context.Context, data *models.Project) error
 	UpdateProject(context context.Context, id string, elements string, userID string) error
+	UpdateProjectMetadata(context context.Context, id string, name string, description string, userID string) error
 	GetAll(context context.Context) ([]*models.Project, error)
 	GetProjectByID(context context.Context, id string, userID string) (*models.Project, error)
 	GetProjectsByUserID(context context.Context, userID string) ([]*models.Project, error)
@@ -49,8 +50,8 @@ func (r *projectRepository) UpdateProject(context context.Context, id string, el
 	}
 	update := bson.M{
 		"$set": bson.M{
-			"elements":  elements,
-			"updatedAt": time.Now().Format(time.RFC3339),
+			"elements":   elements,
+			"updated_at": time.Now().Format(time.RFC3339),
 		},
 	}
 	res, err := r.project.UpdateOne(context, bson.M{"_id": ID,
@@ -59,6 +60,28 @@ func (r *projectRepository) UpdateProject(context context.Context, id string, el
 			bson.M{"members": userID},
 		},
 	}, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return errors.New("no document found to update")
+	}
+	return nil
+}
+
+func (r *projectRepository) UpdateProjectMetadata(context context.Context, id string, name string, description string, userID string) error {
+	ID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"name":        name,
+			"description": description,
+			"updated_at":  time.Now().Format(time.RFC3339),
+		},
+	}
+	res, err := r.project.UpdateOne(context, bson.M{"_id": ID, "owner": userID}, update)
 	if err != nil {
 		return err
 	}
