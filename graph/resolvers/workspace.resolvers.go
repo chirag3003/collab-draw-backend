@@ -111,14 +111,11 @@ func (r *queryResolver) Workspace(ctx context.Context, id string) (*model.Worksp
 	if workspace == nil {
 		return nil, nil // or return an error if preferred
 	}
-
-	members, err := r.Repo.User.GetUsersByID(ctx, append([]string{workspace.Owner}, workspace.Members...))
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch member details: %v", err)
+	ownerData, err := r.Repo.User.GetUsersByID(ctx, []string{workspace.Owner})
+	if err != nil || ownerData == nil || len(ownerData.Users) == 0 {
+		return nil, fmt.Errorf("owner not found")
 	}
-
-	owner := members.Users[0]
-
+	owner := ownerData.Users[0]
 	workspaceMembers := model.WorkspaceMembersResponse{
 		Owner: &model.WorkspaceMember{
 			ID:       owner.ID,
@@ -128,25 +125,33 @@ func (r *queryResolver) Workspace(ctx context.Context, id string) (*model.Worksp
 		},
 	}
 
-	for i := 1; i < len(members.Users); i++ {
-		member := members.Users[i]
-		workspaceMembers.Members = append(workspaceMembers.Members, &model.WorkspaceMember{
-			ID:    member.ID,
-			Email: member.EmailAddresses[0].EmailAddress,
-			FullName: func() string {
-				first := ""
-				last := ""
-				if member.FirstName != nil {
-					first = *member.FirstName
-				}
-				if member.LastName != nil {
-					last = *member.LastName
-				}
-				return first + " " + last
-			}(),
-			ImageURL: *member.ImageURL,
-		})
+	if len(workspace.Members) != 0 {
+		members, err := r.Repo.User.GetUsersByID(ctx, workspace.Members)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch member details: %v", err)
+		}
+
+		for i := 0; i < len(members.Users); i++ {
+			member := members.Users[i]
+			workspaceMembers.Members = append(workspaceMembers.Members, &model.WorkspaceMember{
+				ID:    member.ID,
+				Email: member.EmailAddresses[0].EmailAddress,
+				FullName: func() string {
+					first := ""
+					last := ""
+					if member.FirstName != nil {
+						first = *member.FirstName
+					}
+					if member.LastName != nil {
+						last = *member.LastName
+					}
+					return first + " " + last
+				}(),
+				ImageURL: *member.ImageURL,
+			})
+		}
 	}
+
 	return &model.Workspace{
 		ID:          workspace.ID.Hex(),
 		Name:        workspace.Name,
