@@ -36,4 +36,5 @@ extend type Mutation {
     deleteWorkspace(id: ID!): Boolean!
     addMemberToWorkspace(workspaceId: ID!, email: String!): Boolean!
     removeMemberFromWorkspace(workspaceId: ID!, userId: ID!): Boolean!
+    updateWorkspaceMetadata(id: ID!, name: String!, description: String!): Boolean!
 }

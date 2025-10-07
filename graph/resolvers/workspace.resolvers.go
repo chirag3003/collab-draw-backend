@@ -80,6 +80,17 @@ func (r *mutationResolver) RemoveMemberFromWorkspace(ctx context.Context, worksp
 	return true, nil
 }
 
+// UpdateWorkspaceMetadata is the resolver for the updateWorkspaceMetadata field.
+func (r *mutationResolver) UpdateWorkspaceMetadata(ctx context.Context, id string, name string, description string) (bool, error) {
+	authContext := auth.ForContext(ctx)
+
+	err := r.Repo.Workspace.UpdateWorkspaceMetadata(ctx, id, name, description, authContext.Subject)
+	if err != nil {
+		return false, fmt.Errorf("failed to update workspace metadata: %v", err)
+	}
+	return true, nil
+}
+
 // Workspaces is the resolver for the workspaces field.
 func (r *queryResolver) Workspaces(ctx context.Context) ([]*model.Workspace, error) {
 	return nil, fmt.Errorf("workspaces query is disabled")

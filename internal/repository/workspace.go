@@ -23,6 +23,7 @@ type WorkspaceRepository interface {
 	GetWorkspaceByID(context context.Context, id string, userID string) (*models.Workspace, error)
 	GetWorkspacesByUser(context context.Context, userID string) (*[]models.Workspace, error)
 	GetSharedWorkspaces(context context.Context, userID string) (*[]models.Workspace, error)
+	UpdateWorkspaceMetadata(context context.Context, id string, name string, description string, userID string) error
 	DeleteWorkspace(context context.Context, id string, userID string) error
 	AddMemberToWorkspace(context context.Context, workspaceID string, userID string) error
 	RemoveMemberFromWorkspace(context context.Context, workspaceID string, userID string) error
@@ -101,8 +102,29 @@ func (r *workspaceRepository) GetSharedWorkspaces(context context.Context, userI
 	return &workspaces, nil
 }
 
+func (r *workspaceRepository) UpdateWorkspaceMetadata(context context.Context, id string, name string, description string, userID string) error {
+	ID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = r.workspace.UpdateOne(context, bson.M{"_id": ID, "owner_id": userID}, bson.M{
+		"$set": bson.M{
+			"name":        name,
+			"description": description,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *workspaceRepository) DeleteWorkspace(context context.Context, id string, userID string) error {
 	ID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = r.projects.DeleteMany(context, bson.M{"workspace": ID, "owner_id": userID})
 	if err != nil {
 		return err
 	}
